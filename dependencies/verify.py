@@ -2,13 +2,13 @@ from database import SessionLocal
 import jwt
 from jwt import PyJWTError
 from fastapi import HTTPException, Depends
-from main import Oauth2_schema
+from fastapi.security import OAuth2PasswordBearer
 import os
 from sqlalchemy.orm import Session, sessionmaker
 from models.paciente import Usuario
 SECRET_KEY = os.getenv("SECRET_KEY")
 ALGORITHM = os.getenv("ALGORITHM")
-
+Oauth2_schema = OAuth2PasswordBearer(tokenUrl="auth/login-form")
 
 def pegar_sessao():
     db = SessionLocal()

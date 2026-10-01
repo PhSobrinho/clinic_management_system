@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from models.paciente import Usuario
-from dependencies.verify import pegar_sessao# verificar_token
+from dependencies.verify import pegar_sessao, verificar_token
 from security import ph
 from schemas.schemas_routes import UsuarioSchema, adminSchema, LoginSchema
 from sqlalchemy.orm import Session
@@ -73,7 +73,7 @@ async def login_form(formulario_data: OAuth2PasswordRequestForm = Depends(), ses
     else:
         access_token = criarToken(usuario.id)
         return {"access_token": access_token,
-                "token_type": "Bearer"
+                "token_type": "bearer"
                 }
 
 @auth_routes.get("/refresh")

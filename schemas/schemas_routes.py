@@ -21,3 +21,11 @@ class LoginSchema(BaseModel):
     class Config:
         from_attributes = True
 
+class PacienteSchema(BaseModel):
+    nome: str
+    email: EmailStr
+    telefone: str
+    class Config:
+        from_attributes = True
+
+
