@@ -24,10 +24,10 @@ async def cadastrar_paciente(paciente_schema: PacienteSchema, session: Session =
 @pacientes_routes.get("/listar_pacientes", response_model=list[PacienteResponse])
 async def listar_pacientes(session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     if not usuario.admin:
-        raise HTTPException(status_code=401, detail="você não tem autorização para fazer essa ação")
-    else:
-        pacientes = session.query(Paciente).all()
-        return pacientes
+        raise HTTPException(status_code=403, detail="você não tem autorização para fazer essa ação")
+    
+    pacientes = session.query(Paciente).filter_by(ativo=True).all()
+    return pacientes
 
 
 @pacientes_routes.get("/buscar_paciente/{id_paciente}", response_model=PacienteResponse)
@@ -40,3 +40,27 @@ async def buscar_paciente(id_paciente: int, session: Session = Depends(pegar_ses
     
     return paciente
 
+@pacientes_routes.delete("/remover_paciente/{id_paciente}")
+async def remover_paciente(id_paciente: int, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
+    if not usuario.admin:
+        raise HTTPException(status_code=403, detail="Você não tem autorização para fazer essa modificação")
+    paciente = session.query(Paciente).filter(Paciente.id == id_paciente).first()
+    if not paciente:
+        raise HTTPException(status_code=404, detail="paciente não encontrado")
+    paciente.ativo = False
+    session.commit()
+    return {"mensagem": f"sucesso, paciente de id {id_paciente} foi removido"}
+
+@pacientes_routes.put("/atualizar_paciente/{id_paciente}", response_model=PacienteResponse)
+async def atualizar_paciente(id_paciente: int, paciente_schema: PacienteSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
+    if not usuario.admin:
+        raise HTTPException(status_code=403, detail="Você não tem autorização para fazer essa modificação")
+    paciente = session.query(Paciente).filter(Paciente.id == id_paciente).first()
+    if not paciente: raise HTTPException(status_code=404, detail="Paciente não encontrado")
+    paciente.nome = paciente_schema.nome
+    paciente.email = paciente_schema.email
+    paciente.telefone = paciente_schema.telefone
+    session.commit()
+    session.refresh(paciente)
+
+    return paciente
