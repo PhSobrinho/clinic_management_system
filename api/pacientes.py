@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
+from typing import Any
 from models.paciente import Usuario, Paciente
 from dependencies.verify import pegar_sessao, verificar_token
-from schemas.schemas_routes import UsuarioSchema, adminSchema, LoginSchema, PacienteSchema
+from schemas.schemas_routes import UsuarioSchema, adminSchema, LoginSchema, PacienteSchema, PacienteResponse
 from sqlalchemy.orm import Session
 from datetime import datetime, timedelta, timezone
 pacientes_routes = APIRouter(prefix="/pacientes", tags=["pacientes"], dependencies=[Depends(verificar_token)])
@@ -19,3 +20,23 @@ async def cadastrar_paciente(paciente_schema: PacienteSchema, session: Session =
     session.commit()
     session.refresh(novo_paciente)
     return {"mensagem": "Paciente cadastrado com sucesso"}
+
+@pacientes_routes.get("/listar_pacientes", response_model=list[PacienteResponse])
+async def listar_pacientes(session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
+    if not usuario.admin:
+        raise HTTPException(status_code=401, detail="você não tem autorização para fazer essa ação")
+    else:
+        pacientes = session.query(Paciente).all()
+        return pacientes
+
+
+@pacientes_routes.get("/buscar_paciente/{id_paciente}", response_model=PacienteResponse)
+async def buscar_paciente(id_paciente: int, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
+    if not usuario.admin:
+        raise HTTPException(status_code=403, detail="Você não tem autorização para fazer essa modificação")
+    paciente = session.query(Paciente).filter(Paciente.id == id_paciente).first()
+    if not paciente:
+        raise HTTPException(status_code=404, detail="paciente não encontrado")
+    
+    return paciente
+

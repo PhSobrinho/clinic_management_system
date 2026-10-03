@@ -28,4 +28,15 @@ class PacienteSchema(BaseModel):
     class Config:
         from_attributes = True
 
+class PacienteResponse(BaseModel):
+    id: int
+    nome: str
+    email: str
+    telefone: str
+    ativo: bool
+
+    model_config = {
+        "from_attributes": True
+    }
+
 
