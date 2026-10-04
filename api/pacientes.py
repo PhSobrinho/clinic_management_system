@@ -1,6 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
 from typing import Any
-from models.paciente import Usuario, Paciente
+from models.paciente import Usuario, Dentista
 from dependencies.verify import pegar_sessao, verificar_token
 from schemas.schemas_routes import UsuarioSchema, adminSchema, LoginSchema, PacienteSchema, PacienteResponse
 from sqlalchemy.orm import Session
@@ -11,11 +11,11 @@ pacientes_routes = APIRouter(prefix="/pacientes", tags=["pacientes"], dependenci
 async def cadastrar_paciente(paciente_schema: PacienteSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     if not usuario.admin: 
         raise HTTPException(status_code=403,detail="Sem permissão, apenas administradores podem cadastrar novos pacientes")
-    paciente = session.query(Paciente).filter(Paciente.nome==paciente_schema.nome).first()
+    paciente = session.query(Dentista).filter(Dentista.nome==paciente_schema.nome).first()
     if paciente:
         raise HTTPException(status_code=409, detail="paciente já foi cadastrado")
    
-    novo_paciente = Paciente(nome=paciente_schema.nome, email=paciente_schema.email, telefone=paciente_schema.telefone)
+    novo_paciente = Dentista(nome=paciente_schema.nome, email=paciente_schema.email, telefone=paciente_schema.telefone)
     session.add(novo_paciente)
     session.commit()
     session.refresh(novo_paciente)
@@ -26,7 +26,7 @@ async def listar_pacientes(session: Session = Depends(pegar_sessao), usuario: Us
     if not usuario.admin:
         raise HTTPException(status_code=403, detail="você não tem autorização para fazer essa ação")
     
-    pacientes = session.query(Paciente).filter_by(ativo=True).all()
+    pacientes = session.query(Dentista).filter_by(ativo=True).all()
     return pacientes
 
 
@@ -34,7 +34,7 @@ async def listar_pacientes(session: Session = Depends(pegar_sessao), usuario: Us
 async def buscar_paciente(id_paciente: int, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     if not usuario.admin:
         raise HTTPException(status_code=403, detail="Você não tem autorização para fazer essa modificação")
-    paciente = session.query(Paciente).filter(Paciente.id == id_paciente).first()
+    paciente = session.query(Dentista).filter(Dentista.id == id_paciente).first()
     if not paciente:
         raise HTTPException(status_code=404, detail="paciente não encontrado")
     
@@ -44,7 +44,7 @@ async def buscar_paciente(id_paciente: int, session: Session = Depends(pegar_ses
 async def remover_paciente(id_paciente: int, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     if not usuario.admin:
         raise HTTPException(status_code=403, detail="Você não tem autorização para fazer essa modificação")
-    paciente = session.query(Paciente).filter(Paciente.id == id_paciente).first()
+    paciente = session.query(Dentista).filter(Dentista.id == id_paciente).first()
     if not paciente:
         raise HTTPException(status_code=404, detail="paciente não encontrado")
     paciente.ativo = False
@@ -55,7 +55,7 @@ async def remover_paciente(id_paciente: int, session: Session = Depends(pegar_se
 async def atualizar_paciente(id_paciente: int, paciente_schema: PacienteSchema, session: Session = Depends(pegar_sessao), usuario: Usuario = Depends(verificar_token)):
     if not usuario.admin:
         raise HTTPException(status_code=403, detail="Você não tem autorização para fazer essa modificação")
-    paciente = session.query(Paciente).filter(Paciente.id == id_paciente).first()
+    paciente = session.query(Dentista).filter(Dentista.id == id_paciente).first()
     if not paciente: raise HTTPException(status_code=404, detail="Paciente não encontrado")
     paciente.nome = paciente_schema.nome
     paciente.email = paciente_schema.email

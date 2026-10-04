@@ -1,5 +1,5 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional, List
+from typing import Optional, List, ClassVar
 
 
 class UsuarioSchema(BaseModel):
@@ -38,5 +38,29 @@ class PacienteResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
+
+class DentistaSchema(BaseModel):
+    nome:str
+    email: EmailStr
+    telefone: str
+    cro: str
+    especialidade: str
+
+    class Config:
+        from_attributes =True
+
+class DentistaResponse(BaseModel):
+    id: int
+    nome: str
+    email: str
+    telefone: str
+    cro: str
+    especialidade: str
+    ativo: bool
+
+    model_config = {
+        "from_attributes": True
+    }
+
 
 
