@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional, List, ClassVar
-
+from datetime import datetime
 
 class UsuarioSchema(BaseModel):
     nome: str
@@ -61,6 +61,22 @@ class DentistaResponse(BaseModel):
     model_config = {
         "from_attributes": True
     }
+class ConsultaCreate(BaseModel):
+    paciente_id: int
+    dentista_id: int
+    data_hora: datetime
+    descricao_consulta: str
+    
 
 
+class ConsultaResponse(BaseModel):
+    id: int
+    paciente_id: int
+    dentista_id: int
+    data_hora: datetime
+    status: str
+    descricao_consulta: str
 
+    model_config = {
+        "from_attributes": True
+    }

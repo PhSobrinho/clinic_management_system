@@ -8,8 +8,10 @@ app = FastAPI()
 from api.router_usuario import auth_routes
 from api.pacientes import pacientes_routes
 from api.dentistas import dentista_routes
+from api.consultas import consultas_routes
 app.include_router(auth_routes)
 app.include_router(pacientes_routes)
 app.include_router(dentista_routes)
+app.include_router(consultas_routes)
 from database import Base, engine
 Base.metadata.create_all(bind=engine)
