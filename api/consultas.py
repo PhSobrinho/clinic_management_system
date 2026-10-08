@@ -126,3 +126,27 @@ async def cancelar_consulta(id_consulta: int, session: Session = Depends(pegar_s
     consulta.status = "cancelado"
     session.commit()
     return {"mensagem": f"Consulta de id {id_consulta} cancelada com sucesso"}
+
+@consultas_routes.get("/listar_consultas", response_model=list[ConsultaResponse])
+async def listar_consultas(session: Session = Depends(pegar_sessao)):
+    consultas = session.query(Consulta).filter_by(status="agendado").all()
+    return consultas
+
+@consultas_routes.get("/buscar_consulta/{id_consulta}", response_model=ConsultaResponse)
+async def buscar_consulta(id_consulta: int, session: Session = Depends(pegar_sessao)):
+    consulta = session.query(Consulta).filter(Consulta.id == id_consulta).first()
+    if not consulta:
+        raise HTTPException(status_code=404, detail="consulta não encontrada")
+    return consulta
+
+@consultas_routes.patch("/realizar_consulta/{id_consulta}", response_model=ConsultaResponse)
+async def realizar_consulta(id_consulta: int, session: Session = Depends(pegar_sessao)):
+    consulta = session.query(Consulta).filter(Consulta.id == id_consulta).first()
+    if not consulta:
+            raise HTTPException(status_code=404, detail="consulta não encontrada")
+    if consulta.status != "agendado":
+        raise HTTPException(status_code=400,detail="apenas consultas agendadas podem ser realizadas")
+    consulta.status = "realizado"
+    session.commit()
+    session.refresh(consulta)
+    return consulta
